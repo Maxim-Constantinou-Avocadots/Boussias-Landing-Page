@@ -13,6 +13,7 @@ Then, from wix/:  npx @wix/cli@latest build && CI=1 npx @wix/cli@latest release
 """
 from __future__ import annotations
 
+import hashlib
 import re
 import shutil
 import sys
@@ -33,6 +34,26 @@ STATIC_FILES = [
 # Wix's CDN 404s on non-ASCII asset paths, so these are renamed on the way in
 # and the same substitution is applied to the markup.
 RENAMES = {"PARTY-GUIDE-450χ350.png": "PARTY-GUIDE-450x350.png"}
+
+def version_assets(markup: str) -> str:
+    """Append a content hash to local css/js URLs.
+
+    Wix serves static assets `cache-control: public, max-age=3600, immutable`, so a
+    browser will not even revalidate them for an hour. Without this, a page update
+    ships new HTML against a stale cached script — which is how the enquiry form
+    ended up inert. Hashing the URL makes a changed file a different URL.
+    """
+
+    def stamp(match: re.Match[str]) -> str:
+        attr, path = match.group(1), match.group(2)
+        target = PUBLIC / path.lstrip("/")
+        if not target.is_file():
+            return match.group(0)
+        digest = hashlib.sha256(target.read_bytes()).hexdigest()[:8]
+        return f'{attr}="{path}?v={digest}"'
+
+    return re.sub(r'(src|href)="(/[^"?]+\.(?:css|js))"', stamp, markup)
+
 
 def rootify(markup: str) -> str:
     """Make relative asset references root-absolute so they resolve from any route."""
@@ -76,6 +97,7 @@ def main() -> int:
     head, body = rootify(head), rootify(body)
     for old, new in RENAMES.items():
         head, body = head.replace(old, new), body.replace(old, new)
+    head, body = version_assets(head), version_assets(body)
 
     HTML.mkdir(parents=True, exist_ok=True)
     (HTML / "head.html").write_text(head, encoding="utf-8")
