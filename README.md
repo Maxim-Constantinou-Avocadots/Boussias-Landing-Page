@@ -23,3 +23,7 @@ See `CONTENT_AUDIT.md` for the content comparison and scope.
 ## Run locally
 
 Serve the static site with `python3 -m http.server 8000 --directory dist`, then open http://localhost:8000. No package installation or build step is needed. For static hosting, use `dist` as the publish directory.
+
+## Deployment
+
+`.github/workflows/deploy-pages.yml` publishes `dist/` to GitHub Pages on every push to `main`, and can also be run manually from the Actions tab. The live site is served at https://maxim-constantinou-avocadots.github.io/Boussias-Landing-Page/. All asset paths are relative, so the site works correctly under that project subpath. `dist/.nojekyll` stops Pages from running Jekyll over the output.
