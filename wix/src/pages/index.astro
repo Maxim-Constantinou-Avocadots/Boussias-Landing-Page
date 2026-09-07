@@ -1,15 +1,46 @@
 ---
 // BOUSSIAS — AI in Marketing 2026.
 // The original hand-written markup is injected verbatim via set:html so Astro never
-// JSX-parses it (the embedded speaker-data JSON is full of braces). Styles, scripts
-// and assets are served straight from public/, so the design is byte-identical to
-// the GitHub build.
+// JSX-parses it (the embedded speaker-data JSON is full of braces). Styles and assets
+// are served straight from public/, so the design matches the GitHub build.
+//
+// The enquiry form is a plain <form method="post" action="/api/enquiry">. That route
+// redirects back here with ?enquiry=sent|error, and the outcome panel below is rendered
+// server-side — so submitting and confirming both work with JavaScript disabled.
 import headHtml from '../html/head.html?raw';
 import bodyHtml from '../html/body.html?raw';
+
+export const prerender = false;
+
+const outcome = Astro.url.searchParams.get('enquiry');
+
+const SENT = `<div class="enquiry-draft" id="enquiry-result">
+<h4 id="draft-heading" tabindex="-1">Thank you — your enquiry has been sent.</h4>
+<p>The BOUSSIAS Cyprus team has received your details and will be in touch shortly.</p>
+<a class="button button-blue" href="/#enquiry">Send another enquiry <span aria-hidden="true">↗</span></a>
+</div>`;
+
+const ERROR = `<div class="enquiry-draft" id="enquiry-result">
+<h4 id="draft-heading" tabindex="-1">Your enquiry could not be sent.</h4>
+<p>Something went wrong on our side and nothing was recorded. Please try again, or email
+<a href="mailto:elenah@boussias.cy">elenah@boussias.cy</a> directly.</p>
+</div>`;
+
+let body = bodyHtml;
+if (outcome === 'sent') {
+  // Hide the form so the confirmation is the only thing in the card.
+  body = body
+    .replace('<form id="enquiry-form"', '<form id="enquiry-form" hidden')
+    .replace('<!--ENQUIRY-RESULT-->', SENT);
+} else if (outcome === 'error') {
+  body = body.replace('<!--ENQUIRY-RESULT-->', ERROR);
+} else {
+  body = body.replace('<!--ENQUIRY-RESULT-->', '');
+}
 ---
 
 <!doctype html>
 <html lang="en">
   <head set:html={headHtml}></head>
-  <body set:html={bodyHtml}></body>
+  <body set:html={body}></body>
 </html>
