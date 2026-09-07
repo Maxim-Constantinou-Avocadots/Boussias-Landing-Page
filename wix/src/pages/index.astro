@@ -14,26 +14,31 @@ export const prerender = false;
 
 const outcome = Astro.url.searchParams.get('enquiry');
 
-const SENT = `<div class="enquiry-draft" id="enquiry-result">
-<h4 id="draft-heading" tabindex="-1">Thank you — your enquiry has been sent.</h4>
+const TICK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>`;
+const BANG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5"/><path d="M12 16.2h.01"/></svg>`;
+
+const SENT = `<div class="enquiry-done" id="enquiry-result">
+<span class="done-mark">${TICK}</span>
+<h4 id="enquiry-result-heading" tabindex="-1">Thank you — your enquiry has been sent.</h4>
 <p>The BOUSSIAS Cyprus team has received your details and will be in touch shortly.</p>
-<a class="button button-blue" href="/#enquiry">Send another enquiry <span aria-hidden="true">↗</span></a>
+<a class="button button-blue" href="/#enquiry">Send another enquiry</a>
 </div>`;
 
-const ERROR = `<div class="enquiry-draft" id="enquiry-result">
-<h4 id="draft-heading" tabindex="-1">Your enquiry could not be sent.</h4>
-<p>Something went wrong on our side and nothing was recorded. Please try again, or email
-<a href="mailto:elenah@boussias.cy">elenah@boussias.cy</a> directly.</p>
+const ERROR = `<div class="enquiry-done is-error" id="enquiry-result">
+<span class="done-mark">${BANG}</span>
+<h4 id="enquiry-result-heading" tabindex="-1">Your enquiry could not be sent.</h4>
+<p>Nothing was recorded, so please try again — or email <a href="mailto:elenah@boussias.cy">elenah@boussias.cy</a> directly.</p>
+<a class="button button-blue" href="/#enquiry">Try again</a>
 </div>`;
 
 let body = bodyHtml;
-if (outcome === 'sent') {
-  // Hide the form so the confirmation is the only thing in the card.
+if (outcome === 'sent' || outcome === 'error') {
+  // The panel carries its own heading, so the form's intro would just repeat a
+  // prompt for a form that is no longer on screen.
   body = body
+    .replace('<div class="form-heading">', '<div class="form-heading" hidden>')
     .replace('<form id="enquiry-form"', '<form id="enquiry-form" hidden')
-    .replace('<!--ENQUIRY-RESULT-->', SENT);
-} else if (outcome === 'error') {
-  body = body.replace('<!--ENQUIRY-RESULT-->', ERROR);
+    .replace('<!--ENQUIRY-RESULT-->', outcome === 'sent' ? SENT : ERROR);
 } else {
   body = body.replace('<!--ENQUIRY-RESULT-->', '');
 }
