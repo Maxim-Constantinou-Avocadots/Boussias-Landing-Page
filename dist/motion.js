@@ -23,12 +23,14 @@
     enabled = !manualPause && !preference.matches;
     root.classList.toggle('motion-enabled', enabled);
     root.classList.toggle('motion-paused', !enabled);
-    toggle.setAttribute('aria-pressed', String(!enabled));
-    const label = preference.matches ? 'Reduced motion is enabled on your device' : enabled ? 'Pause animations' : 'Resume animations';
-    toggle.setAttribute('aria-label', label);
-    toggle.title = label;
-    toggle.querySelector('span').textContent = enabled ? 'Ⅱ' : '▷';
-    toggle.disabled = preference.matches;
+    if (toggle) {
+      toggle.setAttribute('aria-pressed', String(!enabled));
+      const label = preference.matches ? 'Reduced motion is enabled on your device' : enabled ? 'Pause animations' : 'Resume animations';
+      toggle.setAttribute('aria-label', label);
+      toggle.title = label;
+      toggle.querySelector('span').textContent = enabled ? 'Ⅱ' : '▷';
+      toggle.disabled = preference.matches;
+    }
     runningAnimations.forEach(animation => enabled ? animation.play() : animation.finish());
     if (!enabled) {
       cancelAnimationFrame(frame); frame = 0;
@@ -37,7 +39,7 @@
       if (ctx) ctx.clearRect(0, 0, width, height);
     } else start();
   }
-  toggle.addEventListener('click', () => {manualPause = !manualPause; applyMotion();});
+  toggle?.addEventListener('click', () => {manualPause = !manualPause; applyMotion();});
   preference.addEventListener('change', applyMotion);
 
   function resize() {
