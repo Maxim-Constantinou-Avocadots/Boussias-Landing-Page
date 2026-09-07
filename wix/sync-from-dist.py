@@ -34,10 +34,6 @@ STATIC_FILES = [
 # and the same substitution is applied to the markup.
 RENAMES = {"PARTY-GUIDE-450χ350.png": "PARTY-GUIDE-450x350.png"}
 
-# Injected after the site's own scripts; posts the enquiry to /api/enquiry.
-EXTRA_SCRIPT = '<script src="/wix-enquiry.js" defer></script>'
-
-
 def rootify(markup: str) -> str:
     """Make relative asset references root-absolute so they resolve from any route."""
     markup = re.sub(
@@ -80,8 +76,6 @@ def main() -> int:
     head, body = rootify(head), rootify(body)
     for old, new in RENAMES.items():
         head, body = head.replace(old, new), body.replace(old, new)
-    if EXTRA_SCRIPT not in head:
-        head = head.rstrip("\n") + EXTRA_SCRIPT
 
     HTML.mkdir(parents=True, exist_ok=True)
     (HTML / "head.html").write_text(head, encoding="utf-8")

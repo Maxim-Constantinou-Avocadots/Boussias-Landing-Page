@@ -43,7 +43,8 @@ python3 wix/sync-from-dist.py
 cd wix && npx @wix/cli@latest build && CI=1 npx @wix/cli@latest release
 ```
 
-The enquiry form additionally posts to Wix Forms via `src/pages/api/enquiry.ts`, so submissions land
-in the Wix dashboard and create a CRM contact. The existing reviewable email draft is unchanged and
-still works if that call fails. Run `npx @wix/cli@latest env pull` after cloning to create
+The enquiry form submits to Wix Forms via `src/pages/api/enquiry.ts`, so submissions land in the Wix
+dashboard and create a CRM contact. `dist/content.js` posts the form and then shows a confirmation.
+If that call fails — including on a static host with no backend, such as the GitHub Pages build — it
+falls back to the previous reviewable email draft, so the form still works everywhere. Run `npx @wix/cli@latest env pull` after cloning to create
 `.env.local` (gitignored — it holds the client secret).
