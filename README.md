@@ -27,3 +27,23 @@ Serve the static site with `python3 -m http.server 8000 --directory dist`, then 
 ## Deployment
 
 `.github/workflows/deploy-pages.yml` publishes `dist/` to GitHub Pages on every push to `main`, and can also be run manually from the Actions tab. Pages must first be enabled once under Settings → Pages with **Source: GitHub Actions**; the workflow token is not permitted to enable it. The live site is served at https://maxim-constantinou-avocadots.github.io/Boussias-Landing-Page/. All asset paths are relative, so the site works correctly under that project subpath. `dist/.nojekyll` stops Pages from running Jekyll over the output.
+
+## Wix headless deployment
+
+`wix/` holds a Wix-managed headless Astro project that serves the same site from Wix hosting at
+https://boussias-avocadots-0809.wix-site-host.com. `dist/` remains the single source of truth: the
+project carries only the hand-written files, and `python3 wix/sync-from-dist.py` regenerates
+everything derived from `dist/` (the `public/` assets, and the `head.html`/`body.html` fragments that
+`src/pages/index.astro` injects verbatim with `set:html`, so Astro never JSX-parses the markup).
+
+To publish a change: edit `dist/`, then
+
+```sh
+python3 wix/sync-from-dist.py
+cd wix && npx @wix/cli@latest build && CI=1 npx @wix/cli@latest release
+```
+
+The enquiry form additionally posts to Wix Forms via `src/pages/api/enquiry.ts`, so submissions land
+in the Wix dashboard and create a CRM contact. The existing reviewable email draft is unchanged and
+still works if that call fails. Run `npx @wix/cli@latest env pull` after cloning to create
+`.env.local` (gitignored — it holds the client secret).

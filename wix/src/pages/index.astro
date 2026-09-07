@@ -1,0 +1,15 @@
+---
+// BOUSSIAS — AI in Marketing 2026.
+// The original hand-written markup is injected verbatim via set:html so Astro never
+// JSX-parses it (the embedded speaker-data JSON is full of braces). Styles, scripts
+// and assets are served straight from public/, so the design is byte-identical to
+// the GitHub build.
+import headHtml from '../html/head.html?raw';
+import bodyHtml from '../html/body.html?raw';
+---
+
+<!doctype html>
+<html lang="en">
+  <head set:html={headHtml}></head>
+  <body set:html={bodyHtml}></body>
+</html>
