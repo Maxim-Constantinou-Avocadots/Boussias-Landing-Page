@@ -26,4 +26,4 @@ Serve the static site with `python3 -m http.server 8000 --directory dist`, then 
 
 ## Deployment
 
-`.github/workflows/deploy-pages.yml` publishes `dist/` to GitHub Pages on every push to `main`, and can also be run manually from the Actions tab. The live site is served at https://maxim-constantinou-avocadots.github.io/Boussias-Landing-Page/. All asset paths are relative, so the site works correctly under that project subpath. `dist/.nojekyll` stops Pages from running Jekyll over the output.
+`.github/workflows/deploy-pages.yml` publishes `dist/` to GitHub Pages on every push to `main`, and can also be run manually from the Actions tab. Pages must first be enabled once under Settings → Pages with **Source: GitHub Actions**; the workflow token is not permitted to enable it. The live site is served at https://maxim-constantinou-avocadots.github.io/Boussias-Landing-Page/. All asset paths are relative, so the site works correctly under that project subpath. `dist/.nojekyll` stops Pages from running Jekyll over the output.
