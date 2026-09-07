@@ -43,8 +43,13 @@ python3 wix/sync-from-dist.py
 cd wix && npx @wix/cli@latest build && CI=1 npx @wix/cli@latest release
 ```
 
-The enquiry form submits to Wix Forms via `src/pages/api/enquiry.ts`, so submissions land in the Wix
-dashboard and create a CRM contact. `dist/content.js` posts the form and then shows a confirmation.
-If that call fails — including on a static host with no backend, such as the GitHub Pages build — it
-falls back to the previous reviewable email draft, so the form still works everywhere. Run `npx @wix/cli@latest env pull` after cloning to create
+The enquiry form is a plain `<form method="post" action="/api/enquiry">` — no JavaScript is involved
+in submitting it or in showing the result. `src/pages/api/enquiry.ts` writes the enquiry to the
+`enquiries` CMS collection, submits it to Wix Forms, and answers a browser post with a 303 back to
+the page; `index.astro` renders the confirmation from the `?enquiry=sent|error` parameter.
+
+**Read enquiries from the CMS collection** (dashboard → Content Manager → Enquiries), not from Wix
+Forms. Wix was observed deleting `CONFIRMED` Forms submissions server-side a few minutes after they
+were recorded, so the Forms copy is not dependable; the collection is plain Wix Data and is not app-
+or plan-gated. The route reports success if either store accepted the enquiry. Run `npx @wix/cli@latest env pull` after cloning to create
 `.env.local` (gitignored — it holds the client secret).

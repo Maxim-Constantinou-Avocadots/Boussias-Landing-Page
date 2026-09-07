@@ -1,6 +1,13 @@
 import type { APIRoute } from 'astro';
 import { auth } from '@wix/essentials';
 import { submissions } from '@wix/forms';
+import { items } from '@wix/data';
+
+// Every enquiry is also written to this CMS collection. Wix has been observed
+// deleting CONFIRMED Forms submissions server-side minutes after they are
+// recorded, so the collection — plain Wix Data, no app or plan gating — is the
+// durable copy the team actually works from.
+const COLLECTION_ID = 'enquiries';
 
 // Schema seeded by the wix-headless setup run.
 const FORM_ID = 'c822ac41-8a45-4d89-88bd-6167146a166f';
@@ -63,6 +70,30 @@ export const POST: APIRoute = async ({ request }) => {
     values[target] = target === 'event_updates' ? Boolean(value) : value;
   }
 
+  // Durable copy first, so an enquiry is never lost even if Forms drops it.
+  // Its own try/catch: a CMS failure must not stop the Forms submission.
+  let storedInCms = false;
+  try {
+    const insert = auth.elevate(items.insert);
+    await insert(COLLECTION_ID, {
+      firstName: raw.firstName ?? '',
+      lastName: raw.lastName ?? '',
+      email: raw.email ?? '',
+      phone: raw.phone ?? '',
+      company: raw.company ?? '',
+      professionalTitle: raw.professionalTitle ?? '',
+      sponsoring: raw.sponsoring ?? '',
+      attending: raw.attending ?? '',
+      contactMethod: raw.contactMethod ?? '',
+      callbackTime: raw.callbackTime ?? '',
+      eventUpdates: Boolean(raw.eventUpdates),
+      submittedAt: new Date(),
+    });
+    storedInCms = true;
+  } catch (error) {
+    console.error('[enquiry] CMS insert failed', error);
+  }
+
   try {
     // Positional args: createSubmission(submission, options) — not { submission }.
     const result = await submissions.createSubmission({
@@ -80,8 +111,8 @@ export const POST: APIRoute = async ({ request }) => {
       status = confirmed?.submission?.status ?? confirmed?.status ?? status;
     }
 
-    if (status !== 'CONFIRMED') {
-      console.error('[enquiry] submission not confirmed', { id: result._id, status });
+    if (status !== 'CONFIRMED' && !storedInCms) {
+      console.error('[enquiry] submission not confirmed and no CMS copy', { id: result._id, status });
       return isFormPost
         ? redirect('error')
         : new Response(JSON.stringify({ ok: false, error: 'not_confirmed', status }), {
@@ -90,19 +121,20 @@ export const POST: APIRoute = async ({ request }) => {
           });
     }
 
-    console.log('[enquiry] confirmed', result._id);
+    console.log('[enquiry] recorded', { id: result._id, status, storedInCms });
     return isFormPost
       ? redirect('sent')
-      : new Response(JSON.stringify({ ok: true, id: result._id, status }), {
+      : new Response(JSON.stringify({ ok: true, id: result._id, status, storedInCms }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
         });
   } catch (error) {
-    console.error('[enquiry] submission failed', error);
+    console.error('[enquiry] Forms submission failed', error);
+    // The CMS copy is the durable one, so it alone is enough to accept the enquiry.
     return isFormPost
-      ? redirect('error')
-      : new Response(JSON.stringify({ ok: false, error: 'submit_failed' }), {
-          status: 502,
+      ? redirect(storedInCms ? 'sent' : 'error')
+      : new Response(JSON.stringify({ ok: storedInCms, error: storedInCms ? undefined : 'submit_failed', storedInCms }), {
+          status: storedInCms ? 200 : 502,
           headers: { 'Content-Type': 'application/json' },
         });
   }
