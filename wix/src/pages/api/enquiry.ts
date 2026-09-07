@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { auth } from '@wix/essentials';
 import { submissions } from '@wix/forms';
 
 // Schema seeded by the wix-headless setup run.
@@ -46,8 +47,28 @@ export const POST: APIRoute = async ({ request }) => {
       formId: FORM_ID,
       submissions: values,
     });
-    // Any resolved status means the submission exists — treat it as success.
-    return new Response(JSON.stringify({ ok: true, id: result._id, status: result.status }), {
+
+    // Creating over the API yields PENDING, which is NOT recorded: it stays
+    // invisible in the dashboard and is auto-deleted if it isn't confirmed in
+    // time. Only CONFIRMED counts as a delivered enquiry.
+    // Confirming is owner-only, so it has to run elevated — the visitor
+    // identity that created the submission cannot confirm it.
+    let status = result.status;
+    if (status !== 'CONFIRMED' && result._id) {
+      const confirmSubmission = auth.elevate(submissions.confirmSubmission);
+      const confirmed = await confirmSubmission(result._id);
+      status = confirmed?.submission?.status ?? confirmed?.status ?? status;
+    }
+
+    if (status !== 'CONFIRMED') {
+      console.error('[enquiry] submission not confirmed', { id: result._id, status });
+      return new Response(JSON.stringify({ ok: false, error: 'not_confirmed', status }), {
+        status: 502,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response(JSON.stringify({ ok: true, id: result._id, status }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
