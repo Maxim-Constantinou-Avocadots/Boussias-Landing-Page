@@ -56,6 +56,22 @@ def version_assets(markup: str) -> str:
     return re.sub(r'(src|href)="(/[^"?]+\.(?:css|js))"', stamp, markup)
 
 
+# dist/ links pages relatively ("agenda.html") so the plain static build works on
+# any host. Wix serves clean routes instead, so map them on the way in. This runs
+# before rootify, which would otherwise turn them into dead /agenda.html paths.
+PAGE_ROUTES = {
+    'href="index.html#': 'href="/#',
+    'href="index.html"': 'href="/"',
+    'href="agenda.html"': 'href="/agenda"',
+}
+
+
+def route_links(markup: str) -> str:
+    for relative, route in PAGE_ROUTES.items():
+        markup = markup.replace(relative, route)
+    return markup
+
+
 def rootify(markup: str) -> str:
     """Make relative asset references root-absolute so they resolve from any route."""
     markup = re.sub(
@@ -81,6 +97,7 @@ def split_page(name: str) -> tuple[str, str]:
 
     head = "\n".join(lines[locate("<head>") + 1 : locate("</head>")])
     body = "\n".join(lines[locate("<body>") + 1 : locate("</body>")])
+    head, body = route_links(head), route_links(body)
     head, body = rootify(head), rootify(body)
     for old_name, new_name in RENAMES.items():
         head, body = head.replace(old_name, new_name), body.replace(old_name, new_name)
