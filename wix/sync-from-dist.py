@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+import pathlib
 import shutil
 import sys
 from pathlib import Path
@@ -26,7 +27,7 @@ HTML = WIX / "src" / "html"
 
 # Copied verbatim into public/ and served from the site root.
 STATIC_FILES = [
-    "styles.css", "fonts.css", "experience.css", "content.css",
+    "styles.css", "fonts.css", "experience.css", "content.css", "agenda.css",
     "app.js", "motion.js", "content.js",
     "speakers.json", "favicon.svg",
 ]
@@ -63,6 +64,29 @@ def rootify(markup: str) -> str:
     return markup.replace('"image": "assets/', '"image": "/assets/')
 
 
+# Every page split into the raw fragments its .astro route injects.
+PAGES = ["index.html", "agenda.html"]
+
+
+def split_page(name: str) -> tuple[str, str]:
+    """Return (head, body) inner HTML for one page in dist/."""
+    page = DIST / name
+    lines = page.read_text(encoding="utf-8").split("\n")
+
+    def locate(needle: str) -> int:
+        for i, line in enumerate(lines):
+            if needle in line:
+                return i
+        raise SystemExit(f"error: {needle!r} not found in dist/{name}")
+
+    head = "\n".join(lines[locate("<head>") + 1 : locate("</head>")])
+    body = "\n".join(lines[locate("<body>") + 1 : locate("</body>")])
+    head, body = rootify(head), rootify(body)
+    for old_name, new_name in RENAMES.items():
+        head, body = head.replace(old_name, new_name), body.replace(old_name, new_name)
+    return version_assets(head), version_assets(body)
+
+
 def main() -> int:
     index = DIST / "index.html"
     if not index.is_file():
@@ -82,30 +106,19 @@ def main() -> int:
     for name in STATIC_FILES:
         shutil.copy2(DIST / name, PUBLIC / name)
 
-    # 2. Split index.html into head/body fragments.
-    lines = index.read_text(encoding="utf-8").split("\n")
-
-    def locate(needle: str) -> int:
-        for i, line in enumerate(lines):
-            if needle in line:
-                return i
-        raise SystemExit(f"error: {needle!r} not found in dist/index.html")
-
-    head = "\n".join(lines[locate("<head>") + 1 : locate("</head>")])
-    body = "\n".join(lines[locate("<body>") + 1 : locate("</body>")])
-
-    head, body = rootify(head), rootify(body)
-    for old, new in RENAMES.items():
-        head, body = head.replace(old, new), body.replace(old, new)
-    head, body = version_assets(head), version_assets(body)
-
+    # 2. Split each page into the fragments its route injects.
     HTML.mkdir(parents=True, exist_ok=True)
-    (HTML / "head.html").write_text(head, encoding="utf-8")
-    (HTML / "body.html").write_text(body, encoding="utf-8")
+    for name in PAGES:
+        head, body = split_page(name)
+        stem = pathlib.Path(name).stem
+        prefix = "" if stem == "index" else stem + "-"
+        (HTML / f"{prefix}head.html").write_text(head, encoding="utf-8")
+        (HTML / f"{prefix}body.html").write_text(body, encoding="utf-8")
+        print(f"  {name}: head {len(head)}B / body {len(body)}B")
 
     print(
         f"synced {len(list(dest_assets.iterdir()))} assets + {len(STATIC_FILES)} files "
-        f"-> public/, and head.html ({len(head)}B) / body.html ({len(body)}B)"
+        f"-> public/, {len(PAGES)} pages split"
     )
     return 0
 

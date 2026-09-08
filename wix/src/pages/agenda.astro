@@ -1,0 +1,15 @@
+---
+// Agenda page. Same approach as index.astro: the markup is injected verbatim via
+// set:html so Astro never JSX-parses it, and the fragments are generated from
+// dist/agenda.html by wix/sync-from-dist.py.
+import headHtml from '../html/agenda-head.html?raw';
+import bodyHtml from '../html/agenda-body.html?raw';
+
+export const prerender = false;
+---
+
+<!doctype html>
+<html lang="en">
+  <head set:html={headHtml}></head>
+  <body set:html={bodyHtml}></body>
+</html>

@@ -6,7 +6,6 @@
   const toggle = document.querySelector('.motion-toggle');
   const hero = document.querySelector('.hero');
   const art = document.querySelector('.hero-art');
-  const header = document.querySelector('.header');
   const venue = document.querySelector('.venue-image');
   const canvas = document.querySelector('#atmosphere');
   const ctx = canvas.getContext('2d');
@@ -92,9 +91,6 @@
   let scrollFrame = 0;
   function updateScroll() {
     scrollFrame = 0;
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-    root.style.setProperty('--reading', String(max > 0 ? window.scrollY / max : 0));
-    header.classList.toggle('is-scrolled', window.scrollY > 30);
     if (enabled && venue) {
       const rect = venue.getBoundingClientRect();
       if(rect.bottom > 0 && rect.top < window.innerHeight) venue.style.setProperty('--venue-y', `${Math.max(-22, Math.min(22, (window.innerHeight * .5 - rect.top - rect.height * .5) * .055))}px`);

@@ -1,0 +1,128 @@
+/* Agenda page. Uses the site's existing tokens and button system; only the
+   timeline itself is new. */
+
+.agenda-hero {
+  background: radial-gradient(ellipse at 88% 15%, #12417d 0, transparent 55%),
+              linear-gradient(115deg, #07162e, #0d2c5b);
+  color: white;
+  padding: 150px 0 84px;
+}
+.agenda-hero h1 {
+  font: 500 clamp(56px, 8vw, 104px)/.98 var(--heading);
+  letter-spacing: -.055em;
+  margin: 22px 0 0;
+}
+.agenda-lede {
+  font-size: clamp(19px, 2.2vw, 27px);
+  color: #b6d1ff;
+  margin: 18px 0 0;
+  max-width: 22ch;
+  line-height: 1.25;
+}
+.agenda-date {
+  font-size: 15px;
+  color: #9fbdf0;
+  margin: 14px 0 0;
+}
+.agenda-hero .button { margin-top: 34px }
+
+.agenda-section { background: var(--ice); padding-block: 96px }
+.agenda-intro { max-width: 620px; margin-bottom: 46px }
+.agenda-intro p { font-size: 16px; line-height: 1.7; color: var(--muted); margin-top: 14px }
+
+/* --- one row of the timeline ------------------------------------------- */
+.agenda-slots { list-style: none; margin: 0; padding: 0 }
+.agenda-standalone { margin-bottom: 30px }
+
+.agenda-slot {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: 30px;
+  padding: 24px 0;
+  border-top: 1px solid #d9e3f4;
+}
+.agenda-standalone > .agenda-slot:first-child { border-top: 0 }
+
+.agenda-when { display: flex; flex-direction: column; align-items: flex-start; gap: 9px }
+.agenda-time {
+  font: 600 15px/1.3 var(--body);
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.agenda-track {
+  font: 600 10px/1 var(--body);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #2455eb;
+  background: #e2ecff;
+  border: 1px solid #c6d9fb;
+  border-radius: 30px;
+  padding: 6px 11px;
+}
+.agenda-track.is-networking { color: #6b5a1f; background: #fbf3dd; border-color: #eddfb6 }
+
+.agenda-what h3 {
+  font: 600 19px/1.45 var(--heading);
+  letter-spacing: -.015em;
+  color: var(--navy);
+  margin: 0;
+}
+.agenda-people { list-style: none; margin: 12px 0 0; padding: 0 }
+.agenda-people li { font-size: 14px; line-height: 1.6; color: var(--muted) }
+.agenda-people li + li { margin-top: 4px }
+.agenda-name { font-weight: 600; color: #24406e }
+
+/* --- a numbered session groups its talks -------------------------------- */
+.agenda-session {
+  background: white;
+  border: 1px solid #dbe5f6;
+  border-radius: 16px;
+  padding: 32px 34px 12px;
+  margin-bottom: 30px;
+  box-shadow: 0 18px 55px #2c50830a;
+}
+.agenda-session-head {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: 30px;
+  align-items: start;
+  padding-bottom: 22px;
+  border-bottom: 2px solid var(--navy);
+}
+.agenda-session-head .agenda-when { grid-row: 1; grid-column: 1 }
+.agenda-session-no {
+  grid-column: 2;
+  font: 600 11px/1 var(--body);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #7f92b4;
+}
+.agenda-session-head h2 {
+  grid-column: 2;
+  font: 600 clamp(24px, 3vw, 31px)/1.2 var(--heading);
+  letter-spacing: -.03em;
+  color: var(--navy);
+  margin: 9px 0 0;
+}
+.agenda-session .agenda-slot:first-of-type { border-top: 0 }
+
+/* --- closing ------------------------------------------------------------ */
+.agenda-foot { margin-top: 44px; padding-top: 34px; border-top: 1px solid #d9e3f4 }
+.agenda-foot p { font-size: 14px; color: var(--muted) }
+.agenda-foot-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 22px }
+
+@media (max-width: 900px) {
+  .agenda-hero { padding: 122px 0 66px }
+  .agenda-section { padding-block: 66px }
+  .agenda-slot,
+  .agenda-session-head { grid-template-columns: 1fr; gap: 12px }
+  .agenda-session-no,
+  .agenda-session-head h2 { grid-column: 1 }
+  .agenda-when { flex-direction: row; align-items: center; gap: 12px }
+  .agenda-session { padding: 26px 22px 8px; border-radius: 12px }
+  .agenda-what h3 { font-size: 17px }
+}
+@media (max-width: 640px) {
+  .agenda-foot-actions .button { width: 100% }
+}

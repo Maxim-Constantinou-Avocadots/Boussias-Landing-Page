@@ -7,8 +7,11 @@ mobileNav.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeMenu)
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!mobileNav.hidden){closeMenu();menuButton.focus();}});
 window.matchMedia('(min-width:1101px)').addEventListener('change',e=>{if(e.matches)closeMenu();});
 
-const speakers=JSON.parse(document.querySelector('#speaker-data').textContent);
+const speakerData=document.querySelector('#speaker-data');
 const dialog=document.querySelector('#session-dialog');
+// Only the home page carries speaker data and the session dialog.
+if(speakerData&&dialog){
+const speakers=JSON.parse(speakerData.textContent);
 let lastTrigger=null;
 function openSession(index,trigger){
   const speaker=speakers[index];if(!speaker)return;
@@ -28,6 +31,24 @@ document.querySelectorAll('[data-session]').forEach(button=>button.addEventListe
 document.querySelector('.dialog-close').addEventListener('click',()=>dialog.close());
 dialog.addEventListener('click',event=>{if(event.target!==dialog)return;const box=dialog.getBoundingClientRect();if(event.clientX<box.left||event.clientX>box.right||event.clientY<box.top||event.clientY>box.bottom)dialog.close();});
 dialog.addEventListener('close',()=>{document.body.classList.remove('dialog-open');lastTrigger?.focus();});
+}
+
+// Reveal the sticky mobile CTA once the page's opening band has scrolled away.
 const ticketBar=document.querySelector('.mobile-ticket-bar');
-const heroObserver=new IntersectionObserver(([entry])=>ticketBar.classList.toggle('visible',!entry.isIntersecting),{threshold:0});
-heroObserver.observe(document.querySelector('.hero'));
+const topBand=document.querySelector('.hero, .agenda-hero');
+if(ticketBar&&topBand){
+  new IntersectionObserver(([entry])=>ticketBar.classList.toggle('visible',!entry.isIntersecting),{threshold:0}).observe(topBand);
+}
+
+// Header state and the reading-progress bar apply to every page, so they live
+// here rather than in motion.js, which only runs on the animated home page.
+const headerEl=document.querySelector('.header');
+let scrollTick=0;
+function onScroll(){
+  scrollTick=0;
+  const max=document.documentElement.scrollHeight-window.innerHeight;
+  document.documentElement.style.setProperty('--reading',String(max>0?window.scrollY/max:0));
+  if(headerEl)headerEl.classList.toggle('is-scrolled',window.scrollY>30);
+}
+addEventListener('scroll',()=>{if(!scrollTick)scrollTick=requestAnimationFrame(onScroll);},{passive:true});
+onScroll();
