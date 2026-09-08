@@ -51,65 +51,71 @@ def speakers(rows):
         out.append(f'<li><span class="agenda-name">{E(name)}</span>{r}</li>')
     return '<ul class="agenda-people">' + ''.join(out) + '</ul>'
 
-def slot(time, track, title, people=(), lead=False):
-    cls = 'agenda-slot' + (' is-lead' if lead else '')
-    t = 'agenda-track' + (' is-networking' if track == 'Networking' else '')
-    return (f'<li class="{cls}">'
+def slot(time, track, title, people=(), index=0, block=False):
+    """One row. `block` marks it as a standalone card that hangs off the rail."""
+    brk = track == 'Networking'
+    cls = 'agenda-slot' + (' is-break' if brk else '')
+    if block:
+        cls += ' agenda-block agenda-node'
+    t = 'agenda-track' + (' is-networking' if brk else '')
+    return (f'<li class="{cls}" style="--i:{index}">'
             f'<div class="agenda-when"><span class="agenda-time">{E(time)}</span>'
             f'<span class="{t}">{E(track)}</span></div>'
             f'<div class="agenda-what"><h3>{E(title)}</h3>{speakers(people)}</div>'
             f'</li>')
 
 def session(number, time, track, title, slots):
-    return (f'<section class="agenda-session" aria-labelledby="s{number}">'
-            f'<div class="agenda-session-head">'
+    return (f'<section class="agenda-session agenda-block agenda-node" aria-labelledby="s{number}">'
+            f'<div class="agenda-session-head" data-no="{number}">'
             f'<span class="agenda-session-no">Session {number}</span>'
             f'<h2 id="s{number}">{E(title)}</h2>'
             f'<div class="agenda-when"><span class="agenda-time">{E(time)}</span>'
             f'<span class="agenda-track">{E(track)}</span></div>'
             f'</div><ol class="agenda-slots">' + ''.join(slots) + '</ol></section>')
 
-opening = '<ol class="agenda-slots agenda-standalone">' + ''.join([
-    slot('09:00-09:30', 'Networking', 'Registration and Welcome Coffee'),
+def standalone(*rows):
+    return '<ol class="agenda-slots agenda-standalone">' + ''.join(rows) + '</ol>'
+
+opening = standalone(*[
+    slot('09:00-09:30', 'Networking', 'Registration and Welcome Coffee', block=True),
     slot('09:30-09:45', 'On Stage', 'Welcoming Remarks', [
         ('Introduction Conference Moderator', ''),
         ('Maria Kyriakou ,', 'CEO BOUSSIAS Cyprus'),
         ('Research & Innovation Foundation Representative', ''),
         ('Cyprus Communication Agencies Association', ''),
         ('Cyprus Advertisers Association', ''),
-    ]),
-]) + '</ol>'
+    ], block=True),
+])
 
 s1 = session(1, '09:45 –  11:35', 'On Stage', 'AI, Discovery & Personalization', [
     slot('09:45-10:20', 'On Stage',
          '“From Best Practice to Next Practice: Marketing Agility in the AI Era”',
-         [('Crystal Carter ,', 'Head of AI Search & SEO Communications, Wix')]),
+         [('Crystal Carter ,', 'Head of AI Search & SEO Communications, Wix')], index=0),
     slot('10:20 – 10:30', 'On Stage', '“Speech Title TBA”',
-         [('Pantelis Vladimirou,', 'Co-Founder, Webarts Limited')]),
+         [('Pantelis Vladimirou,', 'Co-Founder, Webarts Limited')], index=1),
     slot('10:20 – 10:30', 'On Stage',
          '“Beyond Hello $Firstname – The Real Meaning of Personalization and How AI Helps Scale It”',
-         [('Rasmus Houlind ,', 'Author of Hello $Firstname and CXO, Agillic')]),
+         [('Rasmus Houlind ,', 'Author of Hello $Firstname and CXO, Agillic')], index=2),
 ])
 
-brk = '<ol class="agenda-slots agenda-standalone">' + slot(
-    '11:05-12:00', 'Networking', 'Coffee Break – Visit Expo') + '</ol>'
+brk = standalone(slot('11:05-12:00', 'Networking', 'Coffee Break – Visit Expo', block=True))
 
 s2 = session(2, '12:00 –  13:00', 'On Stage', 'Trust, ROI & Responsible AI', [
     slot('12:00 – 12:35', 'On Stage',
          '“The Trust Dividend: How Ethical AI Outperforms Creepy Marketing Every Time”',
-         [('Gilbert Hill ,', 'Privacy Technologist & Commissioner, UK Data & Marketing Regulator')]),
+         [('Gilbert Hill ,', 'Privacy Technologist & Commissioner, UK Data & Marketing Regulator')], index=0),
     slot('12:35: – 13:10', 'On Stage',
          '“From AI Experiments to Measurable ROI: What It Actually Takes to Make AI Pay Off in Marketing”',
-         [('Valeriya Pilkevic ,', 'Founder, AI Made Simple')]),
+         [('Valeriya Pilkevic ,', 'Founder, AI Made Simple')], index=1),
 ])
 
 s3 = session(3, '13:10 – 14:00', 'On Stage', 'Human Creativity vs Machine Efficiency', [
-    slot('13:10 – 13:25', 'On Stage', '“TOPIC TBC “- Fireside Chat w/ Moderator'),
+    slot('13:10 – 13:25', 'On Stage', '“TOPIC TBC “- Fireside Chat w/ Moderator', index=0),
     slot('13:25 – 13:55', 'On Stage',
          'IN CONVERSATION: “The algorithm made me do it”',
          [('Tina Marinaki ,', 'Architech & Creator, Athens Surreal'),
-          ('Eliza Soufli ,', 'Conference Producer & Hostess')]),
-    slot('13:55 – 14:00', 'On Stage', 'Closing Remarks'),
+          ('Eliza Soufli ,', 'Conference Producer & Hostess')], index=1),
+    slot('13:55 – 14:00', 'On Stage', 'Closing Remarks', index=2),
 ])
 
 TICKET = ('https://www.eventora.com/en/Events/Cyprus-AI-Marketing-2026#TICKETS')
@@ -125,7 +131,7 @@ page = f'''<!doctype html>
   <meta property="og:description" content="From AI Hype to Marketing Results — the full conference agenda for 15 October 2026 at 360 Tower, Nicosia.">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="fonts.css"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="experience.css"><link rel="stylesheet" href="content.css"><link rel="stylesheet" href="agenda.css">
-  <script src="app.js" defer></script>
+  <script src="app.js" defer></script><script src="agenda.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -142,20 +148,29 @@ page = f'''<!doctype html>
         <p class="agenda-date rise" style="--i:3">October 15th, 2026</p>
         <a class="button button-white rise" style="--i:4" data-ticket href="{TICKET}" target="_blank" rel="noopener">Book your ticket now {ARROW}</a>
       </div>
-      <div class="agenda-art" aria-hidden="true"><div class="daystrip"><div class="daystrip-head"><span>ONE DAY</span><span>07 SLOTS</span></div><ol class="daystrip-rows"><li class="daystrip-row is-break" style="--i:0"><span class="daystrip-time">09:00</span><span class="daystrip-label">Registration</span></li><li class="daystrip-row" style="--i:1"><span class="daystrip-time">09:30</span><span class="daystrip-label">Welcoming Remarks</span></li><li class="daystrip-row is-lead" style="--i:2"><span class="daystrip-time">09:45</span><span class="daystrip-label">Session 1 · AI, Discovery &amp; Personalization</span></li><li class="daystrip-row is-break" style="--i:3"><span class="daystrip-time">11:05</span><span class="daystrip-label">Coffee Break</span></li><li class="daystrip-row is-lead" style="--i:4"><span class="daystrip-time">12:00</span><span class="daystrip-label">Session 2 · Trust, ROI &amp; Responsible AI</span></li><li class="daystrip-row is-lead" style="--i:5"><span class="daystrip-time">13:10</span><span class="daystrip-label">Session 3 · Human Creativity vs Machine Efficiency</span></li><li class="daystrip-row" style="--i:6"><span class="daystrip-time">14:00</span><span class="daystrip-label">Closing Remarks</span></li></ol><div class="daystrip-beam"></div></div></div>
+      <div class="agenda-art" aria-hidden="true"><div class="daystrip"><div class="daystrip-head"><span>ONE DAY</span><span>15 OCT 2026</span></div><ol class="daystrip-rows"><li class="daystrip-row is-break" style="--i:0"><span class="daystrip-time">09:00</span><span class="daystrip-label">Registration</span></li><li class="daystrip-row" style="--i:1"><span class="daystrip-time">09:30</span><span class="daystrip-label">Welcoming Remarks</span></li><li class="daystrip-row is-lead" style="--i:2"><span class="daystrip-time">09:45</span><span class="daystrip-label">Session 1 · AI, Discovery &amp; Personalization</span></li><li class="daystrip-row is-break" style="--i:3"><span class="daystrip-time">11:05</span><span class="daystrip-label">Coffee Break</span></li><li class="daystrip-row is-lead" style="--i:4"><span class="daystrip-time">12:00</span><span class="daystrip-label">Session 2 · Trust, ROI &amp; Responsible AI</span></li><li class="daystrip-row is-lead" style="--i:5"><span class="daystrip-time">13:10</span><span class="daystrip-label">Session 3 · Human Creativity vs Machine Efficiency</span></li><li class="daystrip-row" style="--i:6"><span class="daystrip-time">14:00</span><span class="daystrip-label">Closing Remarks</span></li></ol><div class="daystrip-beam"></div></div></div>
     </div>
   </section>
   <section class="agenda-section">
     <div class="wrap">
       <div class="agenda-intro">
-        <span class="section-label">THE DAY / HOUR BY HOUR</span>
+        <span class="section-label">THE DAY</span>
+        <h2>Hour by hour</h2>
         <p>Three sessions, two networking breaks and a full stage programme. Times and titles are as published by the organiser.</p>
+        <ul class="agenda-meta">
+          <li><span class="agenda-meta-k">09:00 — 14:00</span><span class="agenda-meta-v">Doors to close</span></li>
+          <li><span class="agenda-meta-k">3</span><span class="agenda-meta-v">Stage sessions</span></li>
+          <li><span class="agenda-meta-k">2</span><span class="agenda-meta-v">Networking breaks</span></li>
+        </ul>
       </div>
-      {opening}
-      {s1}
-      {brk}
-      {s2}
-      {s3}
+      <div class="agenda-timeline">
+        <div class="agenda-rail" aria-hidden="true"><span class="agenda-rail-fill"></span></div>
+        {opening}
+        {s1}
+        {brk}
+        {s2}
+        {s3}
+      </div>
       <div class="agenda-foot">
         <p>Agenda subject to change. Speakers and sessions are confirmed on the conference page.</p>
         <div class="agenda-foot-actions">
@@ -174,4 +189,6 @@ page = f'''<!doctype html>
 
 (D / 'agenda.html').write_text(page, encoding='utf-8')
 print('wrote dist/agenda.html —', len(page), 'bytes')
-print('sessions:', page.count('agenda-session"'), '| slots:', page.count('class="agenda-slot'))
+print('sessions:', page.count('class="agenda-session '),
+      '| slots:', len(re.findall(r'class="agenda-slot[ "]', page)),
+      '| rail nodes:', page.count('agenda-node'))

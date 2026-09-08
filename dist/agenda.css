@@ -1,5 +1,5 @@
-/* Agenda page. Uses the site's existing tokens and button system; only the
-   timeline itself is new. */
+/* Agenda page. Uses the site's existing tokens and button system; the hero art
+   and the timeline are the only new furniture. */
 
 .agenda-hero {
   position: relative;
@@ -113,17 +113,6 @@
 }
 @keyframes agenda-beam { from { transform: translateY(-38%) } to { transform: translateY(38%) } }
 
-@media (max-width: 1000px) {
-  .agenda-hero-grid { grid-template-columns: 1fr; gap: 44px }
-  .daystrip { transform: none; max-width: 460px }
-}
-@media (prefers-reduced-motion: reduce) {
-  .rise, .daystrip, .daystrip-row { animation: none }
-  .agenda-hero-glow, .daystrip-beam, .agenda-hero h1 span { animation: none }
-}
-.motion-paused .agenda-hero-glow,
-.motion-paused .daystrip-beam,
-.motion-paused .agenda-hero h1 span { animation-play-state: paused }
 .agenda-lede {
   font-size: clamp(19px, 2.2vw, 27px);
   color: #b6d1ff;
@@ -138,103 +127,355 @@
 }
 .agenda-hero .button { margin-top: 34px }
 
-.agenda-section { background: var(--ice); padding-block: 96px }
-.agenda-intro { max-width: 620px; margin-bottom: 46px }
-.agenda-intro p { font-size: 16px; line-height: 1.7; color: var(--muted); margin-top: 14px }
+/* --- the timeline section ------------------------------------------------ */
+.agenda-section {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding-block: 104px;
+  background:
+    radial-gradient(900px 560px at 86% -6%, #dde8ff 0, #dde8ff00 62%),
+    radial-gradient(760px 500px at -6% 44%, #e6eefd 0, #e6eefd00 60%),
+    linear-gradient(180deg, #f7faff, #eaf1fd);
+}
+/* A faint plan grid, faded out top and bottom so it never draws a hard line. */
+.agenda-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(#0a2a6a0e 1px, transparent 1px),
+    linear-gradient(90deg, #0a2a6a0e 1px, transparent 1px);
+  background-size: 72px 72px;
+  -webkit-mask-image: radial-gradient(74% 62% at 50% 0, #000 0, transparent 78%);
+  mask-image: radial-gradient(74% 62% at 50% 0, #000 0, transparent 78%);
+}
 
-/* --- one row of the timeline ------------------------------------------- */
+.agenda-intro { max-width: 660px; margin-bottom: 54px }
+.agenda-intro h2 { margin-top: 14px; color: var(--navy) }
+.agenda-intro p { font-size: 17px; line-height: 1.7; color: var(--muted); margin-top: 18px }
+
+.agenda-meta {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 28px 0 0;
+  padding: 0;
+}
+.agenda-meta li {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 13px 20px;
+  background: #ffffffcc;
+  border: 1px solid #dbe6f9;
+  border-radius: 14px;
+  box-shadow: 0 10px 26px -18px #16337d80;
+  backdrop-filter: blur(4px);
+}
+.agenda-meta-k {
+  font: 600 19px/1 var(--heading);
+  letter-spacing: -.02em;
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
+}
+.agenda-meta-v {
+  font: 600 10px/1 var(--body);
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: #7f92b4;
+}
+
+/* --- the rail the whole day hangs from ---------------------------------- */
+.agenda-timeline { position: relative; padding-left: 64px }
+.agenda-rail {
+  position: absolute;
+  left: 23px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #cbdaf5, #cbdaf5 78%, #cbdaf500);
+}
+/* Fills to the reading line as the page scrolls; JS owns its height. */
+.agenda-rail-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 0;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #2455eb, #5b8bff);
+  box-shadow: 0 0 14px #2455eb66;
+}
+
+/* One marker per block, sitting on the rail. */
+.agenda-node::before {
+  content: '';
+  position: absolute;
+  left: -47px;
+  top: 30px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #c3d5f3;
+  transition: border-color .35s, box-shadow .35s, transform .35s;
+  z-index: 1;
+}
+.agenda-node.is-past::before {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 5px #2455eb1f, 0 0 14px #2455eb59;
+  transform: scale(1.12);
+}
+.agenda-standalone > .agenda-node::before { top: 27px }
+.agenda-node.is-break.is-past::before {
+  border-color: #c9a53c;
+  box-shadow: 0 0 0 5px #c9a53c1f, 0 0 14px #c9a53c4d;
+}
+
+/* --- blocks reveal on scroll. Scoped to .js-reveal so a failed script
+       leaves the page fully readable rather than blank. ------------------- */
+.js-reveal .agenda-block {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .75s ease, transform .75s cubic-bezier(.16, 1, .3, 1);
+}
+.js-reveal .agenda-block.is-in { opacity: 1; transform: none }
+.js-reveal .agenda-session .agenda-slot {
+  opacity: 0;
+  transform: translateY(12px);
+}
+.js-reveal .agenda-session.is-in .agenda-slot {
+  opacity: 1;
+  transform: none;
+  transition: opacity .6s ease, transform .6s cubic-bezier(.16, 1, .3, 1);
+  transition-delay: calc(.14s + var(--i) * .08s);
+}
+
+/* --- one row of the timeline -------------------------------------------- */
 .agenda-slots { list-style: none; margin: 0; padding: 0 }
-.agenda-standalone { margin-bottom: 30px }
+.agenda-standalone { margin-bottom: 18px }
 
 .agenda-slot {
+  position: relative;
   display: grid;
-  grid-template-columns: 190px 1fr;
-  gap: 30px;
-  padding: 24px 0;
-  border-top: 1px solid #d9e3f4;
+  grid-template-columns: 168px 1fr;
+  gap: 28px;
+  padding: 24px 34px;
 }
-.agenda-standalone > .agenda-slot:first-child { border-top: 0 }
+/* An accent bar wipes in on hover, so a row reads as one object. */
+.agenda-slot::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--blue);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform .32s cubic-bezier(.16, 1, .3, 1);
+}
+.agenda-slot:hover::after { transform: scaleY(1) }
+/* The cards cannot clip their overflow — the rail markers live outside them —
+   so the accent bar rounds itself into the corners instead. */
+.agenda-standalone > .agenda-slot::after { border-radius: 18px 0 0 18px }
+.agenda-session .agenda-slot:last-child::after { border-radius: 0 0 0 21px }
 
-.agenda-when { display: flex; flex-direction: column; align-items: flex-start; gap: 9px }
+/* Standalone rows are cards in their own right — nothing sits naked on the
+   canvas. */
+.agenda-standalone > .agenda-slot {
+  background: #fff;
+  border: 1px solid #dfe8f8;
+  border-radius: 18px;
+  box-shadow: 0 2px 3px #16337d08, 0 20px 46px -26px #16337d3d;
+  transition: box-shadow .3s, transform .3s;
+}
+.agenda-standalone > .agenda-slot:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px #16337d0d, 0 26px 56px -24px #16337d4d;
+}
+.agenda-standalone > .agenda-slot.is-break {
+  background: linear-gradient(180deg, #fffdf6, #fdf8ea);
+  border-color: #eee0bb;
+  border-style: dashed;
+  box-shadow: none;
+}
+.agenda-standalone > .agenda-slot.is-break:hover { box-shadow: 0 18px 40px -26px #8a742a66 }
+.agenda-slot.is-break::after { background: #c9a53c }
+
+.agenda-when { display: flex; flex-direction: column; align-items: flex-start; gap: 10px }
 .agenda-time {
-  font: 600 15px/1.3 var(--body);
+  font: 600 16px/1.3 var(--body);
   color: var(--navy);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 .agenda-track {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   font: 600 10px/1 var(--body);
-  letter-spacing: .1em;
+  letter-spacing: .12em;
   text-transform: uppercase;
   color: #2455eb;
-  background: #e2ecff;
-  border: 1px solid #c6d9fb;
+  background: #e6eeff;
+  border: 1px solid #cbdcfb;
   border-radius: 30px;
-  padding: 6px 11px;
+  padding: 6px 12px 6px 10px;
+}
+.agenda-track::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
 }
 .agenda-track.is-networking { color: #6b5a1f; background: #fbf3dd; border-color: #eddfb6 }
 
 .agenda-what h3 {
-  font: 600 19px/1.45 var(--heading);
-  letter-spacing: -.015em;
+  font: 600 20px/1.45 var(--heading);
+  letter-spacing: -.018em;
   color: var(--navy);
   margin: 0;
 }
-.agenda-people { list-style: none; margin: 12px 0 0; padding: 0 }
-.agenda-people li { font-size: 14px; line-height: 1.6; color: var(--muted) }
-.agenda-people li + li { margin-top: 4px }
+
+/* People become chips, so a five-name list stops reading as a paragraph. */
+.agenda-people {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 0;
+}
+.agenda-people li {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--muted);
+  background: #f4f7fe;
+  border: 1px solid #e3ebf9;
+  border-radius: 10px;
+  padding: 8px 13px;
+  transition: border-color .25s, background .25s;
+}
+.agenda-slot:hover .agenda-people li { background: #eef4ff; border-color: #d5e2f8 }
 .agenda-name { font-weight: 600; color: #24406e }
+.agenda-role { color: #6b7a92 }
 
 /* --- a numbered session groups its talks -------------------------------- */
 .agenda-session {
-  background: white;
-  border: 1px solid #dbe5f6;
-  border-radius: 16px;
-  padding: 32px 34px 12px;
-  margin-bottom: 30px;
-  box-shadow: 0 18px 55px #2c50830a;
+  position: relative;
+  background: #fff;
+  border: 1px solid #dfe8f8;
+  border-radius: 22px;
+  margin-bottom: 22px;
+  box-shadow: 0 2px 4px #16337d0a, 0 28px 64px -30px #16337d59;
 }
 .agenda-session-head {
+  position: relative;
+  overflow: hidden;
   display: grid;
-  grid-template-columns: 190px 1fr;
-  gap: 30px;
+  grid-template-columns: 168px 1fr;
+  gap: 28px;
   align-items: start;
-  padding-bottom: 22px;
-  border-bottom: 2px solid var(--navy);
+  padding: 30px 34px 32px;
+  border-radius: 21px 21px 0 0;
+  background: linear-gradient(122deg, #08214d 0, #123a86 58%, #1b4fb0 100%);
+  color: #fff;
+}
+/* The session number, oversized and set into the band. */
+.agenda-session-head::after {
+  content: attr(data-no);
+  position: absolute;
+  right: 18px;
+  bottom: -22px;
+  font: 700 clamp(96px, 11vw, 156px)/.78 var(--heading);
+  letter-spacing: -.07em;
+  color: #ffffff14;
+  pointer-events: none;
 }
 .agenda-session-head .agenda-when { grid-row: 1; grid-column: 1 }
+.agenda-session-head .agenda-time { color: #fff; font-size: 17px }
+.agenda-session-head .agenda-track {
+  color: #bcd4ff;
+  background: #ffffff17;
+  border-color: #ffffff2e;
+}
 .agenda-session-no {
   grid-column: 2;
   font: 600 11px/1 var(--body);
   letter-spacing: .16em;
   text-transform: uppercase;
-  color: #7f92b4;
+  color: #8fb2ee;
 }
 .agenda-session-head h2 {
   grid-column: 2;
-  font: 600 clamp(24px, 3vw, 31px)/1.2 var(--heading);
-  letter-spacing: -.03em;
-  color: var(--navy);
-  margin: 9px 0 0;
+  font: 600 clamp(25px, 3vw, 33px)/1.2 var(--heading);
+  letter-spacing: -.032em;
+  color: #fff;
+  margin: 11px 0 0;
+  max-width: 22ch;
 }
-.agenda-session .agenda-slot:first-of-type { border-top: 0 }
+.agenda-session .agenda-slot + .agenda-slot { border-top: 1px solid #e9effa }
+.agenda-session .agenda-slot { transition: background .28s }
+.agenda-session .agenda-slot:hover { background: #f8fbff }
+.agenda-session .agenda-slot:last-child { border-radius: 0 0 21px 21px }
 
 /* --- closing ------------------------------------------------------------ */
-.agenda-foot { margin-top: 44px; padding-top: 34px; border-top: 1px solid #d9e3f4 }
+.agenda-foot {
+  margin-top: 46px;
+  padding: 30px 34px;
+  background: #ffffffb8;
+  border: 1px solid #dde7f8;
+  border-radius: 18px;
+  backdrop-filter: blur(4px);
+}
 .agenda-foot p { font-size: 14px; color: var(--muted) }
 .agenda-foot-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 22px }
 
+@media (max-width: 1000px) {
+  .agenda-hero-grid { grid-template-columns: 1fr; gap: 44px }
+  .daystrip { transform: none; max-width: 460px }
+}
 @media (max-width: 900px) {
   .agenda-hero { padding: 122px 0 66px }
-  .agenda-section { padding-block: 66px }
+  .agenda-section { padding-block: 70px }
+  .agenda-intro { margin-bottom: 36px }
+  /* The rail needs room the phone does not have. */
+  .agenda-timeline { padding-left: 0 }
+  .agenda-rail, .agenda-node::before { display: none }
   .agenda-slot,
-  .agenda-session-head { grid-template-columns: 1fr; gap: 12px }
+  .agenda-session-head { grid-template-columns: 1fr; gap: 14px }
+  .agenda-slot { padding: 20px 22px }
+  .agenda-session-head { padding: 24px 22px 26px }
   .agenda-session-no,
   .agenda-session-head h2 { grid-column: 1 }
+  .agenda-session-head::after { right: 12px; bottom: -16px; font-size: 88px }
   .agenda-when { flex-direction: row; align-items: center; gap: 12px }
-  .agenda-session { padding: 26px 22px 8px; border-radius: 12px }
-  .agenda-what h3 { font-size: 17px }
+  .agenda-session { border-radius: 16px }
+  .agenda-session-head { border-radius: 15px 15px 0 0 }
+  .agenda-standalone > .agenda-slot { border-radius: 14px }
+  .agenda-what h3 { font-size: 17.5px }
+  .agenda-foot { padding: 24px 22px }
 }
 @media (max-width: 640px) {
   .agenda-foot-actions .button { width: 100% }
+  .agenda-people { display: block }
+  .agenda-people li + li { margin-top: 6px }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .rise, .daystrip, .daystrip-row { animation: none }
+  .agenda-hero-glow, .daystrip-beam, .agenda-hero h1 span { animation: none }
+  .js-reveal .agenda-block,
+  .js-reveal .agenda-session .agenda-slot { opacity: 1; transform: none; transition: none }
+  .agenda-rail-fill, .agenda-node::before { transition: none }
+}
+.motion-paused .agenda-hero-glow,
+.motion-paused .daystrip-beam,
+.motion-paused .agenda-hero h1 span { animation-play-state: paused }

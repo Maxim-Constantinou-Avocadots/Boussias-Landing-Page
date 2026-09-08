@@ -28,7 +28,7 @@ HTML = WIX / "src" / "html"
 # Copied verbatim into public/ and served from the site root.
 STATIC_FILES = [
     "styles.css", "fonts.css", "experience.css", "content.css", "agenda.css",
-    "app.js", "motion.js", "content.js",
+    "app.js", "motion.js", "content.js", "agenda.js",
     "speakers.json", "favicon.svg",
 ]
 
