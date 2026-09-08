@@ -2,16 +2,128 @@
    timeline itself is new. */
 
 .agenda-hero {
-  background: radial-gradient(ellipse at 88% 15%, #12417d 0, transparent 55%),
-              linear-gradient(115deg, #07162e, #0d2c5b);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: linear-gradient(118deg, #05122a, #0b2550 52%, #103264);
   color: white;
-  padding: 150px 0 84px;
+  padding: 150px 0 96px;
+}
+/* Two soft lights drifting behind the copy. Circular and generously oversized, so
+   nothing can sweep a hard edge through the headline. */
+.agenda-hero-glow {
+  position: absolute;
+  inset: -40% -10%;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 72% 30%, #2f6bffb0 0, transparent 42%),
+    radial-gradient(circle at 24% 82%, #123f9199 0, transparent 46%);
+  animation: agenda-drift 26s ease-in-out infinite alternate;
+}
+.agenda-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, #05122acc 0, #05122a45 42%, transparent 68%);
+}
+.agenda-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 60px;
+  align-items: center;
 }
 .agenda-hero h1 {
   font: 500 clamp(56px, 8vw, 104px)/.98 var(--heading);
   letter-spacing: -.055em;
   margin: 22px 0 0;
 }
+.agenda-hero h1 span {
+  background: linear-gradient(104deg, #ffffff 0, #cfe2ff 34%, #7fb0ff 58%, #ffffff 100%);
+  background-size: 220% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: agenda-sheen 9s ease-in-out infinite;
+}
+
+/* Copy rises in on load, one element at a time. */
+.rise { animation: agenda-rise .72s cubic-bezier(.2, .7, .3, 1) backwards; animation-delay: calc(var(--i) * .09s) }
+@keyframes agenda-rise { from { opacity: 0; transform: translateY(16px) } }
+@keyframes agenda-sheen { 0%, 100% { background-position: 0 0 } 50% { background-position: 100% 0 } }
+@keyframes agenda-drift {
+  from { transform: translate3d(-3%, -2%, 0) scale(1) }
+  to   { transform: translate3d(4%, 3%, 0) scale(1.12) }
+}
+
+/* --- the day, as a tilted glass panel ----------------------------------- */
+.agenda-art { perspective: 1400px }
+.daystrip {
+  position: relative;
+  overflow: hidden;
+  transform: rotateY(-15deg) rotateX(6deg) rotate(-1.5deg);
+  transform-origin: left center;
+  background: linear-gradient(155deg, #ffffff1f, #ffffff08);
+  border: 1px solid #ffffff26;
+  border-radius: 18px;
+  padding: 22px 24px 26px;
+  box-shadow: 0 40px 90px #00102e66, inset 0 1px 0 #ffffff2e;
+  backdrop-filter: blur(9px);
+  animation: agenda-rise .9s cubic-bezier(.2, .7, .3, 1) .3s backwards;
+}
+.daystrip-head {
+  display: flex;
+  justify-content: space-between;
+  font: 600 10px/1 var(--body);
+  letter-spacing: .18em;
+  color: #93b6ee;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #ffffff1f;
+}
+.daystrip-rows { list-style: none; margin: 0; padding: 0 }
+.daystrip-row {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 13px 0;
+  border-bottom: 1px solid #ffffff12;
+  animation: agenda-rise .6s cubic-bezier(.2, .7, .3, 1) backwards;
+  animation-delay: calc(.45s + var(--i) * .07s);
+}
+.daystrip-row:last-child { border-bottom: 0 }
+.daystrip-time {
+  font: 600 13px/1 var(--body);
+  font-variant-numeric: tabular-nums;
+  color: #cfe1ff;
+}
+.daystrip-label { font: 500 13px/1.45 var(--body); color: #9fb9e4 }
+.daystrip-row.is-lead .daystrip-label { color: #fff; font-weight: 600 }
+.daystrip-row.is-lead .daystrip-time { color: #7fb0ff }
+.daystrip-row.is-break .daystrip-label { color: #d8c79a }
+.daystrip-row.is-break .daystrip-time { color: #c9b587 }
+
+/* A light passes down the panel, so the day reads as something in motion. */
+.daystrip-beam {
+  position: absolute;
+  inset: -40% -20%;
+  background: linear-gradient(180deg, transparent 42%, #9fc6ff30 50%, transparent 58%);
+  animation: agenda-beam 7s linear infinite;
+  pointer-events: none;
+}
+@keyframes agenda-beam { from { transform: translateY(-38%) } to { transform: translateY(38%) } }
+
+@media (max-width: 1000px) {
+  .agenda-hero-grid { grid-template-columns: 1fr; gap: 44px }
+  .daystrip { transform: none; max-width: 460px }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rise, .daystrip, .daystrip-row { animation: none }
+  .agenda-hero-glow, .daystrip-beam, .agenda-hero h1 span { animation: none }
+}
+.motion-paused .agenda-hero-glow,
+.motion-paused .daystrip-beam,
+.motion-paused .agenda-hero h1 span { animation-play-state: paused }
 .agenda-lede {
   font-size: clamp(19px, 2.2vw, 27px);
   color: #b6d1ff;
