@@ -1,8 +1,15 @@
 'use strict';
 const menuButton = document.querySelector('.menu-toggle');
 const mobileNav = document.querySelector('#mobile-nav');
-function closeMenu(){menuButton.setAttribute('aria-expanded','false');menuButton.setAttribute('aria-label','Open menu');mobileNav.hidden=true;}
-menuButton.addEventListener('click',()=>{const open=menuButton.getAttribute('aria-expanded')==='true';menuButton.setAttribute('aria-expanded',String(!open));menuButton.setAttribute('aria-label',open?'Open menu':'Close menu');mobileNav.hidden=open;});
+// The panel is fixed below the header, whose height changes at four breakpoints.
+// Measuring it beats keeping a copy of those numbers in sync.
+const headerBar = document.querySelector('.header');
+function measureHeader(){if(headerBar)document.documentElement.style.setProperty('--nav-h',headerBar.offsetHeight+'px');}
+function setMenu(open){menuButton.setAttribute('aria-expanded',String(open));menuButton.setAttribute('aria-label',open?'Close menu':'Open menu');mobileNav.hidden=!open;document.body.classList.toggle('nav-open',open);}
+function closeMenu(){setMenu(false);}
+menuButton.addEventListener('click',()=>{const open=menuButton.getAttribute('aria-expanded')==='true';if(!open)measureHeader();setMenu(!open);});
+window.addEventListener('resize',measureHeader,{passive:true});
+measureHeader();
 mobileNav.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeMenu));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!mobileNav.hidden){closeMenu();menuButton.focus();}});
 window.matchMedia('(min-width:1101px)').addEventListener('change',e=>{if(e.matches)closeMenu();});
