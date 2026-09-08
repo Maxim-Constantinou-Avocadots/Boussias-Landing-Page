@@ -56,7 +56,7 @@ def slot(time, track, title, people=(), index=0, block=False):
     brk = track == 'Networking'
     cls = 'agenda-slot' + (' is-break' if brk else '')
     if block:
-        cls += ' agenda-block agenda-node'
+        cls += ' agenda-block'
     t = 'agenda-track' + (' is-networking' if brk else '')
     return (f'<li class="{cls}" style="--i:{index}">'
             f'<div class="agenda-when"><span class="agenda-time">{E(time)}</span>'
@@ -65,7 +65,7 @@ def slot(time, track, title, people=(), index=0, block=False):
             f'</li>')
 
 def session(number, time, track, title, slots):
-    return (f'<section class="agenda-session agenda-block agenda-node" aria-labelledby="s{number}">'
+    return (f'<section class="agenda-session agenda-block" aria-labelledby="s{number}">'
             f'<div class="agenda-session-head" data-no="{number}">'
             f'<span class="agenda-session-no">Session {number}</span>'
             f'<h2 id="s{number}">{E(title)}</h2>'
@@ -164,7 +164,6 @@ page = f'''<!doctype html>
         </ul>
       </div>
       <div class="agenda-timeline">
-        <div class="agenda-rail" aria-hidden="true"><span class="agenda-rail-fill"></span></div>
         {opening}
         {s1}
         {brk}
@@ -191,4 +190,4 @@ page = f'''<!doctype html>
 print('wrote dist/agenda.html —', len(page), 'bytes')
 print('sessions:', page.count('class="agenda-session '),
       '| slots:', len(re.findall(r'class="agenda-slot[ "]', page)),
-      '| rail nodes:', page.count('agenda-node'))
+      '| blocks:', page.count('agenda-block'))

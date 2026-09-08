@@ -189,53 +189,7 @@
   color: #7f92b4;
 }
 
-/* --- the rail the whole day hangs from ---------------------------------- */
-.agenda-timeline { position: relative; padding-left: 64px }
-.agenda-rail {
-  position: absolute;
-  left: 23px;
-  top: 10px;
-  bottom: 10px;
-  width: 2px;
-  border-radius: 2px;
-  background: linear-gradient(180deg, #cbdaf5, #cbdaf5 78%, #cbdaf500);
-}
-/* Fills to the reading line as the page scrolls; JS owns its height. */
-.agenda-rail-fill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 0;
-  border-radius: 2px;
-  background: linear-gradient(180deg, #2455eb, #5b8bff);
-  box-shadow: 0 0 14px #2455eb66;
-}
-
-/* One marker per block, sitting on the rail. */
-.agenda-node::before {
-  content: '';
-  position: absolute;
-  left: -47px;
-  top: 30px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #fff;
-  border: 2px solid #c3d5f3;
-  transition: border-color .35s, box-shadow .35s, transform .35s;
-  z-index: 1;
-}
-.agenda-node.is-past::before {
-  border-color: var(--blue);
-  box-shadow: 0 0 0 5px #2455eb1f, 0 0 14px #2455eb59;
-  transform: scale(1.12);
-}
-.agenda-standalone > .agenda-node::before { top: 27px }
-.agenda-node.is-break.is-past::before {
-  border-color: #c9a53c;
-  box-shadow: 0 0 0 5px #c9a53c1f, 0 0 14px #c9a53c4d;
-}
+.agenda-timeline { position: relative }
 
 /* --- blocks reveal on scroll. Scoped to .js-reveal so a failed script
        leaves the page fully readable rather than blank. ------------------- */
@@ -267,25 +221,6 @@
   gap: 28px;
   padding: 24px 34px;
 }
-/* An accent bar wipes in on hover, so a row reads as one object. */
-.agenda-slot::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--blue);
-  transform: scaleY(0);
-  transform-origin: top;
-  transition: transform .32s cubic-bezier(.16, 1, .3, 1);
-}
-.agenda-slot:hover::after { transform: scaleY(1) }
-/* The cards cannot clip their overflow — the rail markers live outside them —
-   so the accent bar rounds itself into the corners instead. */
-.agenda-standalone > .agenda-slot::after { border-radius: 18px 0 0 18px }
-.agenda-session .agenda-slot:last-child::after { border-radius: 0 0 0 21px }
-
 /* Standalone rows are cards in their own right — nothing sits naked on the
    canvas. */
 .agenda-standalone > .agenda-slot {
@@ -306,7 +241,6 @@
   box-shadow: none;
 }
 .agenda-standalone > .agenda-slot.is-break:hover { box-shadow: 0 18px 40px -26px #8a742a66 }
-.agenda-slot.is-break::after { background: #c9a53c }
 
 .agenda-when { display: flex; flex-direction: column; align-items: flex-start; gap: 10px }
 .agenda-time {
@@ -446,9 +380,6 @@
   .agenda-hero { padding: 122px 0 66px }
   .agenda-section { padding-block: 70px }
   .agenda-intro { margin-bottom: 36px }
-  /* The rail needs room the phone does not have. */
-  .agenda-timeline { padding-left: 0 }
-  .agenda-rail, .agenda-node::before { display: none }
   .agenda-slot,
   .agenda-session-head { grid-template-columns: 1fr; gap: 14px }
   .agenda-slot { padding: 20px 22px }
@@ -474,7 +405,6 @@
   .agenda-hero-glow, .daystrip-beam, .agenda-hero h1 span { animation: none }
   .js-reveal .agenda-block,
   .js-reveal .agenda-session .agenda-slot { opacity: 1; transform: none; transition: none }
-  .agenda-rail-fill, .agenda-node::before { transition: none }
 }
 .motion-paused .agenda-hero-glow,
 .motion-paused .daystrip-beam,
