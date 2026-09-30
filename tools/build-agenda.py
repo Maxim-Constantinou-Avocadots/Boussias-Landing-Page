@@ -3,10 +3,14 @@
 Run from anywhere:  python3 tools/build-agenda.py
 Then:               python3 wix/sync-from-dist.py
 
-Content is reproduced verbatim from futureofmarketing.cy, including its errors
-(the duplicate 10:20-10:30 slot, the stray colon in "12:35:", the Session 1 /
-coffee-break overlap and the name spellings), because the page is meant to be
-diffable against the original.
+Content is reproduced verbatim from futureofmarketing.cy, including its errors,
+because the page is meant to be diffable against the original. As published on
+2026-09-30 those are: both of the last two sessions labelled "SESSION 2"; the
+stray colon in "12:50:"; the unclosed quote opening the panel title; Session 1
+headed 09:45-11:40 while its last talk runs to 11:45; a Greek capital tau
+opening "Theodoros"; "SDK (TBC)" where the body above it is abbreviated ΣΔΕΚ;
+and the panel listing both Andreas Hadjigeorgiou of Avocadots and a separate
+"Representative from AVOCADOTS".
 """
 import html
 import pathlib
@@ -43,32 +47,42 @@ header = header.replace(
 E = html.escape
 
 def speakers(rows):
+    """A person is a (name, role) pair; a bare string is a heading within the list
+    (the panel slot uses "Panelists:" and "Moderator:")."""
     if not rows:
         return ''
     out = []
-    for name, role in rows:
+    for row in rows:
+        if isinstance(row, str):
+            out.append(f'<li class="agenda-people-label">{E(row)}</li>')
+            continue
+        name, role = row
         r = f' <span class="agenda-role">{E(role)}</span>' if role else ''
         out.append(f'<li><span class="agenda-name">{E(name)}</span>{r}</li>')
     return '<ul class="agenda-people">' + ''.join(out) + '</ul>'
 
-def slot(time, track, title, people=(), index=0, block=False):
-    """One row. `block` marks it as a standalone card that hangs off the rail."""
+def slot(time, track, title, people=(), index=0, block=False, flag=''):
+    """One row. `block` marks it as a standalone card; `flag` is a sponsor badge."""
     brk = track == 'Networking'
     cls = 'agenda-slot' + (' is-break' if brk else '')
     if block:
         cls += ' agenda-block'
     t = 'agenda-track' + (' is-networking' if brk else '')
+    badge = f'<span class="agenda-flag">{E(flag)}</span>' if flag else ''
     return (f'<li class="{cls}" style="--i:{index}">'
             f'<div class="agenda-when"><span class="agenda-time">{E(time)}</span>'
-            f'<span class="{t}">{E(track)}</span></div>'
+            f'<span class="{t}">{E(track)}</span>{badge}</div>'
             f'<div class="agenda-what"><h3>{E(title)}</h3>{speakers(people)}</div>'
             f'</li>')
 
-def session(number, time, track, title, slots):
-    return (f'<section class="agenda-session agenda-block" aria-labelledby="s{number}">'
-            f'<div class="agenda-session-head" data-no="{number}">'
-            f'<span class="agenda-session-no">Session {number}</span>'
-            f'<h2 id="s{number}">{E(title)}</h2>'
+def session(sid, label, time, track, title, slots):
+    """`label` is the source's own wording, `sid` keeps the anchor unique — the
+    source numbers its last two sessions identically, so the two cannot be one."""
+    no = label.split()[-1]
+    return (f'<section class="agenda-session agenda-block" aria-labelledby="s{sid}">'
+            f'<div class="agenda-session-head" data-no="{E(no)}">'
+            f'<span class="agenda-session-no">{E(label)}</span>'
+            f'<h2 id="s{sid}">{E(title)}</h2>'
             f'<div class="agenda-when"><span class="agenda-time">{E(time)}</span>'
             f'<span class="agenda-track">{E(track)}</span></div>'
             f'</div><ol class="agenda-slots">' + ''.join(slots) + '</ol></section>')
@@ -80,42 +94,60 @@ opening = standalone(*[
     slot('09:00-09:30', 'Networking', 'Registration and Welcome Coffee', block=True),
     slot('09:30-09:45', 'On Stage', 'Welcoming Remarks', [
         ('Introduction Conference Moderator', ''),
-        ('Maria Kyriakou ,', 'CEO BOUSSIAS Cyprus'),
-        ('Research & Innovation Foundation Representative', ''),
-        ('Cyprus Communication Agencies Association', ''),
-        ('Cyprus Advertisers Association', ''),
+        ('Maria Kyriakou,', 'CEO BOUSSIAS Cyprus'),
+        ('Κώστας Ντάλτας,', 'Πρόεδρος, Σύνδεσμος Διαφήμισης-Επικοινωνίας Κύπρου (ΣΔΕΚ)'),
+        ('Τheodoros Loukaidis', '– Director General, Research and Innovation Foundation'),
+        ('SDK (TBC)', ''),
     ], block=True),
 ])
 
-s1 = session(1, '09:45 –  11:35', 'On Stage', 'AI, Discovery & Personalization', [
+s1 = session(1, 'SESSION 1', '09:45 –  11:40', 'On Stage', 'THE NEW RULES OF MARKETING', [
     slot('09:45-10:20', 'On Stage',
          '“From Best Practice to Next Practice: Marketing Agility in the AI Era”',
-         [('Crystal Carter ,', 'Head of AI Search & SEO Communications, Wix')], index=0),
-    slot('10:20 – 10:30', 'On Stage', '“Speech Title TBA”',
-         [('Pantelis Vladimirou,', 'Co-Founder, Webarts Limited')], index=1),
-    slot('10:20 – 10:30', 'On Stage',
+         [('Crystal Carter,', 'Head of AI Search & SEO Communications, Wix')], index=0),
+    slot('10:20 – 10:30', 'On Stage', '“Beyond Content: End-to-End AI Marketing”',
+         [('Pantelis Vladimirou,', 'Co-Founder, Webarts Limited')], index=1,
+         flag='GOLD SPONSOR'),
+    slot('10:30 – 11:05', 'On Stage',
          '“Beyond Hello $Firstname – The Real Meaning of Personalization and How AI Helps Scale It”',
-         [('Rasmus Houlind ,', 'Author of Hello $Firstname and CXO, Agillic')], index=2),
+         [('Rasmus Houlind,', 'Author of Hello $Firstname and CXO, Agillic')], index=2),
+    slot('11:05 – 11:20', 'On Stage', '“Topic TBC”',
+         [('Tasos Antoniades', 'Lecturer in Artificial Intelligence and Machine Learning, Neapolis University Pafos')],
+         index=3),
+    slot('11:20 – 11:45', 'On Stage',
+         '“Don’t Be Romantic About the Past – marketeers are built for what comes next”',
+         [('Oliver Yonchev,', 'Speaker & Founder, cocreatd – Co-founder, Potentially')], index=4),
 ])
 
-brk = standalone(slot('11:05-12:00', 'Networking', 'Coffee Break – Visit Expo', block=True))
+brk = standalone(slot('11:45-12:30', 'Networking', 'Coffee Break – Networking', block=True))
 
-s2 = session(2, '12:00 –  13:00', 'On Stage', 'Trust, ROI & Responsible AI', [
-    slot('12:00 – 12:35', 'On Stage',
-         '“The Trust Dividend: How Ethical AI Outperforms Creepy Marketing Every Time”',
-         [('Gilbert Hill ,', 'Privacy Technologist & Commissioner, UK Data & Marketing Regulator')], index=0),
-    slot('12:35: – 13:10', 'On Stage',
+s2 = session(2, 'SESSION 2', '12:30 –  13:25', 'On Stage',
+             'FROM AI EXPERIMENTS TO BUSINESS IMPACT & TRUST', [
+    slot('12:30 – 12:50', 'On Stage',
+         '“PANEL DISCUSSION: “AI in Marketing: Efficiency vs. Creativity – Finding the Right Balance”',
+         ['Panelists:',
+          ('Tasos Antoniades', '– Lecturer in Artificial Intelligence and Machine Learning, Neapolis University Pafos'),
+          ('Andreas Hadjigeorgiou', '– Founder & CEO, Avocadots'),
+          ('Maria Odysseos', '– Marketing Manager, KEAN'),
+          ('Representative from AVOCADOTS', ''),
+          'Moderator:',
+          ('Eliza Soufli – Conference Producer & Hostess', '')], index=0),
+    slot('12:50: – 13:25', 'On Stage',
          '“From AI Experiments to Measurable ROI: What It Actually Takes to Make AI Pay Off in Marketing”',
-         [('Valeriya Pilkevic ,', 'Founder, AI Made Simple')], index=1),
+         [('Valeriya Pilkevic,', 'Founder, AI Made Simple')], index=1),
 ])
 
-s3 = session(3, '13:10 – 14:00', 'On Stage', 'Human Creativity vs Machine Efficiency', [
-    slot('13:10 – 13:25', 'On Stage', '“TOPIC TBC “- Fireside Chat w/ Moderator', index=0),
-    slot('13:25 – 13:55', 'On Stage',
+# The source labels this one "SESSION 2" as well; reproduced as published.
+s3 = session(3, 'SESSION 2', '13:25 – 14:30', 'On Stage',
+             'TRUST, CREATIVITY & THE HUMAN ADVANTAGE', [
+    slot('13:25 – 14:00', 'On Stage',
+         '“The Trust Dividend: How Ethical AI Outperforms Creepy Marketing Every Time”',
+         [('Gilbert Hill,', 'Privacy Technologist & Commissioner, UK Data & Marketing Regulator')], index=0),
+    slot('14:00 – 14:25', 'On Stage',
          'IN CONVERSATION: “The algorithm made me do it”',
-         [('Tina Marinaki ,', 'Architech & Creator, Athens Surreal'),
-          ('Eliza Soufli ,', 'Conference Producer & Hostess')], index=1),
-    slot('13:55 – 14:00', 'On Stage', 'Closing Remarks', index=2),
+         [('Tina Marinaki,', 'Architect & Creator, Athens Surreal'),
+          ('Eliza Soufli,', 'Conference Producer & Hostess')], index=1),
+    slot('14:25 – 14:30', 'On Stage', 'Closing Remarks', index=2),
 ])
 
 TICKET = ('https://www.eventora.com/en/Events/Cyprus-AI-Marketing-2026#TICKETS')
@@ -148,7 +180,7 @@ page = f'''<!doctype html>
         <p class="agenda-date rise" style="--i:3">October 15th, 2026</p>
         <a class="button button-white rise" style="--i:4" data-ticket href="{TICKET}" target="_blank" rel="noopener">Book your ticket now {ARROW}</a>
       </div>
-      <div class="agenda-art" aria-hidden="true"><div class="daystrip"><div class="daystrip-head"><span>ONE DAY</span><span>15 OCT 2026</span></div><ol class="daystrip-rows"><li class="daystrip-row is-break" style="--i:0"><span class="daystrip-time">09:00</span><span class="daystrip-label">Registration</span></li><li class="daystrip-row" style="--i:1"><span class="daystrip-time">09:30</span><span class="daystrip-label">Welcoming Remarks</span></li><li class="daystrip-row is-lead" style="--i:2"><span class="daystrip-time">09:45</span><span class="daystrip-label">Session 1 · AI, Discovery &amp; Personalization</span></li><li class="daystrip-row is-break" style="--i:3"><span class="daystrip-time">11:05</span><span class="daystrip-label">Coffee Break</span></li><li class="daystrip-row is-lead" style="--i:4"><span class="daystrip-time">12:00</span><span class="daystrip-label">Session 2 · Trust, ROI &amp; Responsible AI</span></li><li class="daystrip-row is-lead" style="--i:5"><span class="daystrip-time">13:10</span><span class="daystrip-label">Session 3 · Human Creativity vs Machine Efficiency</span></li><li class="daystrip-row" style="--i:6"><span class="daystrip-time">14:00</span><span class="daystrip-label">Closing Remarks</span></li></ol><div class="daystrip-beam"></div></div></div>
+      <div class="agenda-art" aria-hidden="true"><div class="daystrip"><div class="daystrip-head"><span>ONE DAY</span><span>15 OCT 2026</span></div><ol class="daystrip-rows"><li class="daystrip-row is-break" style="--i:0"><span class="daystrip-time">09:00</span><span class="daystrip-label">Registration</span></li><li class="daystrip-row" style="--i:1"><span class="daystrip-time">09:30</span><span class="daystrip-label">Welcoming Remarks</span></li><li class="daystrip-row is-lead" style="--i:2"><span class="daystrip-time">09:45</span><span class="daystrip-label">The New Rules of Marketing</span></li><li class="daystrip-row is-break" style="--i:3"><span class="daystrip-time">11:45</span><span class="daystrip-label">Coffee Break</span></li><li class="daystrip-row is-lead" style="--i:4"><span class="daystrip-time">12:30</span><span class="daystrip-label">From AI Experiments to Business Impact &amp; Trust</span></li><li class="daystrip-row is-lead" style="--i:5"><span class="daystrip-time">13:25</span><span class="daystrip-label">Trust, Creativity &amp; the Human Advantage</span></li><li class="daystrip-row" style="--i:6"><span class="daystrip-time">14:25</span><span class="daystrip-label">Closing Remarks</span></li></ol><div class="daystrip-beam"></div></div></div>
     </div>
   </section>
   <section class="agenda-section">
@@ -158,7 +190,7 @@ page = f'''<!doctype html>
         <h2>Hour by hour</h2>
         <p>Three sessions, two networking breaks and a full stage programme. Times and titles are as published by the organiser.</p>
         <ul class="agenda-meta">
-          <li><span class="agenda-meta-k">09:00 — 14:00</span><span class="agenda-meta-v">Doors to close</span></li>
+          <li><span class="agenda-meta-k">09:00 — 14:30</span><span class="agenda-meta-v">Doors to close</span></li>
           <li><span class="agenda-meta-k">3</span><span class="agenda-meta-v">Stage sessions</span></li>
           <li><span class="agenda-meta-k">2</span><span class="agenda-meta-v">Networking breaks</span></li>
         </ul>

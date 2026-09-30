@@ -300,6 +300,30 @@
 }
 .agenda-slot:hover .agenda-people li { background: #eef4ff; border-color: #d5e2f8 }
 .agenda-name { font-weight: 600; color: #24406e }
+
+/* "Panelists:" / "Moderator:" break the chip run into groups. */
+.agenda-people-label {
+  flex: 0 0 100%;
+  margin-top: 2px;
+  padding: 0;
+  background: none;
+  border: 0;
+  font: 600 10px/1 var(--body);
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: #7f92b4;
+}
+.agenda-people-label:first-child { margin-top: 0 }
+/* Sponsor billing, carried in the time column beside the track pill. */
+.agenda-flag {
+  font: 600 10px/1 var(--body);
+  letter-spacing: .1em;
+  color: #6b5a1f;
+  background: #f6e7bd;
+  border: 1px solid #e4d09a;
+  border-radius: 30px;
+  padding: 6px 11px;
+}
 .agenda-role { color: #6b7a92 }
 
 /* --- a numbered session groups its talks -------------------------------- */
