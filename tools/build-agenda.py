@@ -3,14 +3,8 @@
 Run from anywhere:  python3 tools/build-agenda.py
 Then:               python3 wix/sync-from-dist.py
 
-Content is reproduced verbatim from futureofmarketing.cy, including its errors,
-because the page is meant to be diffable against the original. As published on
-2026-09-30 those are: both of the last two sessions labelled "SESSION 2"; the
-stray colon in "12:50:"; the unclosed quote opening the panel title; Session 1
-headed 09:45-11:40 while its last talk runs to 11:45; a Greek capital tau
-opening "Theodoros"; "SDK (TBC)" where the body above it is abbreviated ΣΔΕΚ;
-and the panel listing both Andreas Hadjigeorgiou of Avocadots and a separate
-"Representative from AVOCADOTS".
+Content follows the client's final 5 October 2026 agenda and written feedback.
+Session 1 ends at 11:45, matching the last talk and the coffee-break start.
 """
 import html
 import pathlib
@@ -93,15 +87,13 @@ def standalone(*rows):
 opening = standalone(*[
     slot('09:00-09:30', 'Networking', 'Registration and Welcome Coffee', block=True),
     slot('09:30-09:45', 'On Stage', 'Welcoming Remarks', [
-        ('Introduction Conference Moderator', ''),
-        ('Maria Kyriakou,', 'CEO BOUSSIAS Cyprus'),
-        ('Κώστας Ντάλτας,', 'Πρόεδρος, Σύνδεσμος Διαφήμισης-Επικοινωνίας Κύπρου (ΣΔΕΚ)'),
-        ('Τheodoros Loukaidis', '– Director General, Research and Innovation Foundation'),
-        ('SDK (TBC)', ''),
+        ('Maria Kyriakou', '– CEO, BOUSSIAS Cyprus'),
+        ('Costas Daltas', '– President, Cyprus Communication Agencies Association'),
+        ('Theodoros Loukaidis', '– Director General, Research and Innovation Foundation'),
     ], block=True),
 ])
 
-s1 = session(1, 'SESSION 1', '09:45 –  11:40', 'On Stage', 'THE NEW RULES OF MARKETING', [
+s1 = session(1, 'SESSION 1', '09:45 – 11:45', 'On Stage', 'THE NEW RULES OF MARKETING', [
     slot('09:45-10:20', 'On Stage',
          '“From Best Practice to Next Practice: Marketing Agility in the AI Era”',
          [('Crystal Carter,', 'Head of AI Search & SEO Communications, Wix')], index=0),
@@ -111,34 +103,32 @@ s1 = session(1, 'SESSION 1', '09:45 –  11:40', 'On Stage', 'THE NEW RULES OF 
     slot('10:30 – 11:05', 'On Stage',
          '“Beyond Hello $Firstname – The Real Meaning of Personalization and How AI Helps Scale It”',
          [('Rasmus Houlind,', 'Author of Hello $Firstname and CXO, Agillic')], index=2),
-    slot('11:05 – 11:20', 'On Stage', '“Topic TBC”',
+    slot('11:05 – 11:20', 'On Stage', 'Beyond the prompt',
          [('Tasos Antoniades', 'Lecturer in Artificial Intelligence and Machine Learning, Neapolis University Pafos')],
-         index=3),
+         index=3, flag='ACADEMIC PARTNER'),
     slot('11:20 – 11:45', 'On Stage',
          '“Don’t Be Romantic About the Past – marketeers are built for what comes next”',
          [('Oliver Yonchev,', 'Speaker & Founder, cocreatd – Co-founder, Potentially')], index=4),
 ])
 
-brk = standalone(slot('11:45-12:30', 'Networking', 'Coffee Break – Networking', block=True))
+brk = standalone(slot('11:45-12:30', 'Networking', 'Coffee Break & Networking', block=True))
 
 s2 = session(2, 'SESSION 2', '12:30 –  13:25', 'On Stage',
-             'FROM AI EXPERIMENTS TO BUSINESS IMPACT & TRUST', [
+             'FROM AI EXPERIMENTS TO BUSINESS IMPACT', [
     slot('12:30 – 12:50', 'On Stage',
-         '“PANEL DISCUSSION: “AI in Marketing: Efficiency vs. Creativity – Finding the Right Balance”',
+         'PANEL DISCUSSION: “AI in Marketing: Efficiency vs. Creativity – Finding the Right Balance”',
          ['Panelists:',
           ('Tasos Antoniades', '– Lecturer in Artificial Intelligence and Machine Learning, Neapolis University Pafos'),
           ('Andreas Hadjigeorgiou', '– Founder & CEO, Avocadots'),
           ('Maria Odysseos', '– Marketing Manager, KEAN'),
-          ('Representative from AVOCADOTS', ''),
           'Moderator:',
-          ('Eliza Soufli – Conference Producer & Hostess', '')], index=0),
-    slot('12:50: – 13:25', 'On Stage',
+          ('Eliza Soufli', '– Conference Producer & Hostess')], index=0),
+    slot('12:50 – 13:25', 'On Stage',
          '“From AI Experiments to Measurable ROI: What It Actually Takes to Make AI Pay Off in Marketing”',
          [('Valeriya Pilkevic,', 'Founder, AI Made Simple')], index=1),
 ])
 
-# The source labels this one "SESSION 2" as well; reproduced as published.
-s3 = session(3, 'SESSION 2', '13:25 – 14:30', 'On Stage',
+s3 = session(3, 'SESSION 3', '13:25 – 14:30', 'On Stage',
              'TRUST, CREATIVITY & THE HUMAN ADVANTAGE', [
     slot('13:25 – 14:00', 'On Stage',
          '“The Trust Dividend: How Ethical AI Outperforms Creepy Marketing Every Time”',
@@ -180,7 +170,7 @@ page = f'''<!doctype html>
         <p class="agenda-date rise" style="--i:3">October 15th, 2026</p>
         <a class="button button-white rise" style="--i:4" data-ticket href="{TICKET}" target="_blank" rel="noopener">Book your ticket now {ARROW}</a>
       </div>
-      <div class="agenda-art" aria-hidden="true"><div class="daystrip"><div class="daystrip-head"><span>ONE DAY</span><span>15 OCT 2026</span></div><ol class="daystrip-rows"><li class="daystrip-row is-break" style="--i:0"><span class="daystrip-time">09:00</span><span class="daystrip-label">Registration</span></li><li class="daystrip-row" style="--i:1"><span class="daystrip-time">09:30</span><span class="daystrip-label">Welcoming Remarks</span></li><li class="daystrip-row is-lead" style="--i:2"><span class="daystrip-time">09:45</span><span class="daystrip-label">The New Rules of Marketing</span></li><li class="daystrip-row is-break" style="--i:3"><span class="daystrip-time">11:45</span><span class="daystrip-label">Coffee Break</span></li><li class="daystrip-row is-lead" style="--i:4"><span class="daystrip-time">12:30</span><span class="daystrip-label">From AI Experiments to Business Impact &amp; Trust</span></li><li class="daystrip-row is-lead" style="--i:5"><span class="daystrip-time">13:25</span><span class="daystrip-label">Trust, Creativity &amp; the Human Advantage</span></li><li class="daystrip-row" style="--i:6"><span class="daystrip-time">14:25</span><span class="daystrip-label">Closing Remarks</span></li></ol><div class="daystrip-beam"></div></div></div>
+      <div class="agenda-art" aria-hidden="true"><div class="daystrip"><div class="daystrip-head"><span>ONE DAY</span><span>15 OCT 2026</span></div><ol class="daystrip-rows"><li class="daystrip-row is-break" style="--i:0"><span class="daystrip-time">09:00</span><span class="daystrip-label">Registration</span></li><li class="daystrip-row" style="--i:1"><span class="daystrip-time">09:30</span><span class="daystrip-label">Welcoming Remarks</span></li><li class="daystrip-row is-lead" style="--i:2"><span class="daystrip-time">09:45</span><span class="daystrip-label">The New Rules of Marketing</span></li><li class="daystrip-row is-break" style="--i:3"><span class="daystrip-time">11:45</span><span class="daystrip-label">Coffee Break</span></li><li class="daystrip-row is-lead" style="--i:4"><span class="daystrip-time">12:30</span><span class="daystrip-label">From AI Experiments to Business Impact</span></li><li class="daystrip-row is-lead" style="--i:5"><span class="daystrip-time">13:25</span><span class="daystrip-label">Trust, Creativity &amp; the Human Advantage</span></li><li class="daystrip-row" style="--i:6"><span class="daystrip-time">14:25</span><span class="daystrip-label">Closing Remarks</span></li></ol><div class="daystrip-beam"></div></div></div>
     </div>
   </section>
   <section class="agenda-section">
