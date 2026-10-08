@@ -4,7 +4,8 @@ Run from anywhere:  python3 tools/build-agenda.py
 Then:               python3 wix/sync-from-dist.py
 
 Content follows the client's final 5 October 2026 agenda and written feedback.
-Session 1 ends at 11:45, matching the last talk and the coffee-break start.
+Session 1 is headed 09:45-11:40 as the client's sheet has it, which its own
+last talk (ending 11:45) and the following break (starting 11:45) contradict.
 """
 import html
 import pathlib
@@ -93,7 +94,9 @@ opening = standalone(*[
     ], block=True),
 ])
 
-s1 = session(1, 'SESSION 1', '09:45 – 11:45', 'On Stage', 'THE NEW RULES OF MARKETING', [
+# The client's 5 October sheet heads this session 09:45-11:40 even though its own
+# last talk runs to 11:45 and the break starts at 11:45. Reproduced as supplied.
+s1 = session(1, 'SESSION 1', '09:45 – 11:40', 'On Stage', 'THE NEW RULES OF MARKETING', [
     slot('09:45-10:20', 'On Stage',
          '“From Best Practice to Next Practice: Marketing Agility in the AI Era”',
          [('Crystal Carter,', 'Head of AI Search & SEO Communications, Wix')], index=0),
